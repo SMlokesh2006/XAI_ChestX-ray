@@ -6,11 +6,12 @@ import torch.nn as nn
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
-
 from torchvision import models, transforms
-from pytorch_grad_cam import GradCAM
+from pytorch_grad_cam import GradCAMPlusPlus
 from pytorch_grad_cam.utils.image import show_cam_on_image
 from PIL import Image
+from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+
 
 # -----------------------------
 # Load model
@@ -48,9 +49,16 @@ with torch.no_grad():
 # Grad-CAM
 # -----------------------------
 target_layer = model.layer4[-1]
-cam = GradCAM(model=model, target_layers=[target_layer])
+cam = GradCAMPlusPlus(
+    model=model,
+    target_layers=[model.layer4[-1]]
+)
 
-grayscale_cam = cam(input_tensor=input_tensor)[0]  # (H, W)
+targets = [ClassifierOutputTarget(0)]  # binary model → index 0
+grayscale_cam = cam(
+    input_tensor=input_tensor,
+    targets=targets
+)[0]
 
 # -----------------------------
 # EXPLANATION PART (NEW)

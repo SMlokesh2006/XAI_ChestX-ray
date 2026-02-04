@@ -37,9 +37,9 @@ def train():
     model = get_model().to(device)
 
     criterion = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
-    optimizer = optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = optim.Adam(model.parameters(), lr=3e-5)
 
-    epochs = 5
+    epochs = 20
 
     # -----------------------------
     # Training loop
