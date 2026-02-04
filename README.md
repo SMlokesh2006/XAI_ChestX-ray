@@ -198,7 +198,7 @@ Results may not generalize to unseen hospital data
 
 ### Future Work
 
-Training on larger, more diverse datasets
+
 
 Cross-validation
 
