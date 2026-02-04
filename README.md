@@ -118,30 +118,75 @@ XAI_Pneumonia_Project/
 
 ## ▶️ How to Run
 
-### 1. Train the Model
+### 1. Setup Virtual Environment
+
+First, create and activate a virtual environment to isolate project dependencies:
+
+**Windows:**
 ```bash
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+venv\Scripts\activate
+```
+
+**Linux/Mac:**
+```bash
+# Create virtual environment
+python3 -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate
+```
+
+### 2. Install Dependencies
+
+Once the virtual environment is activated, install all required packages:
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Train and Evaluate the Model
+
+Run the following scripts in order:
+
+```bash
+# Train the model
 python src/train.py
+
+# Evaluate on test set
 python src/evaluate.py
+
+# Generate Grad-CAM visualizations
 python src/gradcam.py
 ```
 
-### Dependencies
+### 4. Deactivate Virtual Environment
 
-Python 3.10+
+When you're done working on the project:
 
-PyTorch
+```bash
+deactivate
+```
 
-Torchvision
+---
 
-NumPy
+## 📦 Dependencies
 
-Matplotlib
+- Python 3.10+
+- PyTorch 2.10.0
+- Torchvision 0.25.0
+- NumPy 2.4.1
+- Matplotlib 3.10.8
+- OpenCV 4.13.0.90
+- scikit-learn 1.8.0
+- grad-cam 1.5.5
 
-OpenCV
+All dependencies are listed in `requirements.txt`
 
-scikit-learn
-
-pytorch-grad-cam
+---
 
 ### Limitations
 
