@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { ImageUpload } from './components/ImageUpload';
 import { PredictionCard } from './components/PredictionCard';
 import { GradCAMView } from './components/GradCAMView';
+import { DiagnosticReport } from './components/DiagnosticReport';
 
 // Use environment variable or default to localhost
 const API_URL = 'http://localhost:5000';
@@ -68,10 +69,10 @@ function App() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
-          {/* Left Panel: Upload */}
-          <div className="lg:col-span-5 space-y-6">
+          {/* Left Panel: Upload - Sticky for alignment */}
+          <div className="space-y-6 lg:sticky lg:top-24 h-fit">
             <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100">
               <h3 className="text-lg font-semibold mb-4 text-slate-700">Input Image</h3>
               <ImageUpload
@@ -106,7 +107,7 @@ function App() {
           </div>
 
           {/* Right Panel: Results */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="space-y-6">
             {/* Placeholder when empty */}
             {!prediction && !loading && !error && (
               <div className="h-full min-h-[400px] flex flex-col items-center justify-center text-slate-300 border-2 border-dashed border-slate-200 rounded-3xl bg-slate-50/50">
@@ -124,12 +125,19 @@ function App() {
                 />
 
                 {prediction && (
-                  <GradCAMView
-                    originalImage={selectedFile}
-                    heatmapImage={prediction.heatmap}
-                    heatmapOnly={prediction.heatmap_only}
-                    explanation={prediction.explanation}
-                  />
+                  <>
+                    <GradCAMView
+                      originalImage={selectedFile}
+                      heatmapImage={prediction.heatmap}
+                      heatmapOnly={prediction.heatmap_only}
+                      explanation={null} // Passing null to disable logic in GradCAMView if it uses it, but we removed it there mostly
+                    />
+
+                    <DiagnosticReport
+                      analysis={prediction}
+                      originalImage={selectedFile}
+                    />
+                  </>
                 )}
               </div>
             )}

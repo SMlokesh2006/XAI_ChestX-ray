@@ -1,0 +1,313 @@
+import React, { useState, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    FileText, Activity, Brain, AlertTriangle,
+    ShieldCheck, Thermometer, ChevronDown, Download,
+    Stethoscope, Layout
+} from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+export function DiagnosticReport({ analysis }) {
+    const [viewMode, setViewMode] = useState('simple'); // 'simple' | 'technical'
+    const [expandedSections, setExpandedSections] = useState({
+        summary: true,
+        clinical: true,
+        attention: false,
+        metrics: false
+    });
+
+    const reportRef = useRef(null);
+
+    const toggleSection = (section) => {
+        setExpandedSections(prev => ({
+            ...prev,
+            [section]: !prev[section]
+        }));
+    };
+
+    const generatePDF = async () => {
+        if (!reportRef.current) return;
+
+        // Temporarily expand all for PDF
+        const currentExpanded = { ...expandedSections };
+        setExpandedSections({ summary: true, attention: true, clinical: true, metrics: true });
+
+        // Wait for render
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        try {
+            const canvas = await html2canvas(reportRef.current, {
+                scale: 2,
+                backgroundColor: '#ffffff'
+            });
+
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('pneumoscan-diagnostic-report.pdf');
+        } catch (err) {
+            console.error("PDF Export failed", err);
+        } finally {
+            setExpandedSections(currentExpanded);
+        }
+    };
+
+    if (!analysis) return null;
+
+    const { prediction, confidence, severity, regions, reasoning, reliability } = analysis;
+    const isNormal = prediction === "NORMAL";
+    const bgSoft = isNormal ? "bg-emerald-50" : "bg-rose-50";
+    const borderSoft = isNormal ? "border-emerald-100" : "border-rose-100";
+    const textDark = isNormal ? "text-emerald-900" : "text-rose-900";
+
+    return (
+        <div className="w-full space-y-6">
+
+            {/* Control Bar */}
+            <div className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                    <button
+                        onClick={() => setViewMode('simple')}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'simple'
+                                ? 'bg-white text-slate-800 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                    >
+                        Simple View
+                    </button>
+                    <button
+                        onClick={() => setViewMode('technical')}
+                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'technical'
+                                ? 'bg-white text-slate-800 shadow-sm'
+                                : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                    >
+                        Technical View
+                    </button>
+                </div>
+
+                <button
+                    onClick={generatePDF}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded-lg text-sm font-medium hover:bg-slate-700 transition-colors"
+                >
+                    <Download size={16} />
+                    Export Report
+                </button>
+            </div>
+
+            {/* Main Report Container */}
+            <div
+                ref={reportRef}
+                className={`bg-white rounded-2xl overflow-hidden border border-slate-200 shadow-lg`}
+            >
+                {/* Header */}
+                <div className={`p-6 border-b border-slate-100 ${bgSoft}`}>
+                    <div className="flex items-center justify-between mb-2">
+                        <h2 className={`text-xl font-bold ${textDark} flex items-center gap-2`}>
+                            <FileText size={24} />
+                            AI Diagnostic Report
+                        </h2>
+                        <span className="text-xs font-mono text-slate-500 uppercase tracking-wider">
+                            ID: {Math.random().toString(36).substr(2, 9).toUpperCase()}
+                        </span>
+                    </div>
+                    <p className="text-sm text-slate-600">
+                        Generated by PneumoScan.AI • ResNet18 + Grad-CAM++
+                    </p>
+                </div>
+
+                {/* Sections */}
+                <div className="divide-y divide-slate-100">
+
+                    {/* 1. Clinical Summary */}
+                    <div className="bg-white">
+                        <button
+                            onClick={() => toggleSection('summary')}
+                            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-slate-100 rounded-lg">
+                                    <Stethoscope size={20} className="text-blue-500" />
+                                </div>
+                                <span className="font-semibold text-slate-700">Prediction Summary</span>
+                            </div>
+                            {expandedSections.summary ? <ChevronDown className="rotate-180 transition-transform" /> : <ChevronDown className="transition-transform" />}
+                        </button>
+
+                        {expandedSections.summary && (
+                            <div className="px-6 pb-6 pt-2">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div>
+                                        <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Primary Diagnosis</h4>
+                                        <div className={`p-4 rounded-xl border ${borderSoft} ${bgSoft}`}>
+                                            <span className={`text-2xl font-bold ${isNormal ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                {prediction}
+                                            </span>
+                                            <div className="mt-1 flex items-center gap-2">
+                                                <div className="h-2 w-full bg-slate-200 rounded-full max-w-[100px] overflow-hidden">
+                                                    <div
+                                                        className={`h-full ${isNormal ? 'bg-emerald-500' : 'bg-rose-500'}`}
+                                                        style={{ width: `${confidence}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-sm font-medium text-slate-600">{confidence.toFixed(1)}% Confidence</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Severity Assessment</h4>
+                                        <div className="flex items-center gap-3 mt-2">
+                                            <div className={`p-3 rounded-full ${severity.label === 'Critical' ? 'bg-red-100 text-red-600' :
+                                                    severity.label === 'High' ? 'bg-orange-100 text-orange-600' :
+                                                        severity.label === 'Moderate' ? 'bg-yellow-100 text-yellow-600' :
+                                                            'bg-slate-100 text-slate-600'
+                                                }`}>
+                                                <Thermometer size={24} />
+                                            </div>
+                                            <div>
+                                                <div className="text-lg font-bold text-slate-800">{severity.label}</div>
+                                                <div className="text-xs text-slate-500">Based on opacity coverage & intensity</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 2. Clinical Reasoning */}
+                    <div className="bg-white">
+                        <button
+                            onClick={() => toggleSection('clinical')}
+                            className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-slate-100 rounded-lg">
+                                    <Brain size={20} className="text-purple-500" />
+                                </div>
+                                <span className="font-semibold text-slate-700">Clinical Reasoning</span>
+                            </div>
+                            {expandedSections.clinical ? <ChevronDown className="rotate-180 transition-transform" /> : <ChevronDown className="transition-transform" />}
+                        </button>
+
+                        {expandedSections.clinical && (
+                            <div className="px-6 pb-6 pt-2">
+                                <ul className="space-y-3">
+                                    {reasoning.map((point, index) => (
+                                        <li key={index} className="flex items-start gap-3 text-slate-700 text-sm leading-relaxed">
+                                            <div className="mt-1.5 w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                                            {point}
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="mt-4 p-3 bg-slate-50 rounded-lg text-xs text-slate-500 italic border border-slate-100">
+                                    "The model identifies patterns consistent with the diagnosis by analyzing pixel intensity variations in lung fields compared to learned healthy distributions."
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 3. Region Analysis - Technical View Only or Expanded */}
+                    {(viewMode === 'technical') && (
+                        <div className="bg-white">
+                            <button
+                                onClick={() => toggleSection('attention')}
+                                className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-slate-100 rounded-lg">
+                                        <Layout size={20} className="text-indigo-500" />
+                                    </div>
+                                    <span className="font-semibold text-slate-700">Regional Attention Analysis</span>
+                                </div>
+                                {expandedSections.attention ? <ChevronDown className="rotate-180 transition-transform" /> : <ChevronDown className="transition-transform" />}
+                            </button>
+
+                            {expandedSections.attention && (
+                                <div className="px-6 pb-6 pt-2">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <RegionBar label="Top Left (Upper Right Lung)" value={regions.top_left} />
+                                        <RegionBar label="Top Right (Upper Left Lung)" value={regions.top_right} />
+                                        <RegionBar label="Bottom Left (Lower Right Lung)" value={regions.bottom_left} />
+                                        <RegionBar label="Bottom Right (Lower Left Lung)" value={regions.bottom_right} />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 4. Explainability Metrics - Technical View */}
+                    {(viewMode === 'technical') && (
+                        <div className="bg-white">
+                            <button
+                                onClick={() => toggleSection('metrics')}
+                                className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-slate-100 rounded-lg">
+                                        <ShieldCheck size={20} className="text-teal-500" />
+                                    </div>
+                                    <span className="font-semibold text-slate-700">Model Reliability & Metrics</span>
+                                </div>
+                                {expandedSections.metrics ? <ChevronDown className="rotate-180 transition-transform" /> : <ChevronDown className="transition-transform" />}
+                            </button>
+
+                            {expandedSections.metrics && (
+                                <div className="px-6 pb-6 pt-2">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                                            <div className="text-slate-500 text-xs mb-1">Decision Reliability</div>
+                                            <div className="font-semibold text-slate-800 flex items-center gap-2">
+                                                {reliability.label}
+                                                <span className="text-xs font-normal text-slate-400">({reliability.score.toFixed(1)}/100)</span>
+                                            </div>
+                                        </div>
+                                        <div className="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                                            <div className="text-slate-500 text-xs mb-1">High Activation Area</div>
+                                            <div className="font-semibold text-slate-800">
+                                                {(severity.high_activation_ratio * 100).toFixed(1)}% of Image
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* 5. Disclaimer */}
+                    <div className="p-6 bg-slate-50 border-t border-slate-100 mt-2">
+                        <div className="flex items-start gap-3">
+                            <AlertTriangle size={18} className="text-amber-500 mt-0.5" />
+                            <p className="text-xs text-slate-500 leading-relaxed">
+                                <strong className="text-slate-700">Medical Disclaimer:</strong> This report is generated by an AI research tool (PneumoScan.AI) and is intended for educational and research leverage only. It is <strong>not</strong> a substitute for professional medical diagnosis, advice, or treatment. Always seek the advice of a qualified healthcare provider with any questions you may have regarding a medical condition.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function RegionBar({ label, value }) {
+    return (
+        <div className="space-y-2">
+            <div className="flex justify-between text-xs font-medium text-slate-600">
+                <span>{label}</span>
+                <span>{(value * 100).toFixed(0)}%</span>
+            </div>
+            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                <div
+                    className="h-full bg-indigo-500 rounded-full transition-all duration-500"
+                    style={{ width: `${value * 100}%` }}
+                />
+            </div>
+        </div>
+    );
+}

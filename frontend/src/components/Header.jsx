@@ -25,14 +25,19 @@ export function Header() {
                     <a href="#" className="hover:text-medical-600 transition-colors">Settings</a>
                 </nav>
                 <div className="w-px h-6 bg-slate-200 hidden md:block" />
-                <a
-                    href="https://github.com"
-                    target='_blank'
-                    rel="noreferrer"
-                    className="text-slate-400 hover:text-slate-800 transition-colors"
-                >
-                    <Github size={20} />
-                </a>
+                <div className="flex items-center gap-3 pl-2">
+                    <div className="text-right hidden md:block">
+                        <div className="text-sm font-semibold text-slate-700">Rakesh</div>
+                        <div className="text-xs text-slate-500">Radiologist</div>
+                    </div>
+                    <div className="h-10 w-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
+                        <img
+                            src="C:\Users\Lokesh S M\Desktop\COLLEGE\PDL\PDL Project\XAI_ChestX-ray\frontend\src\assets\male-avatar-svgrepo-com.svg"
+                            alt="Profile"
+                            className="h-full w-full object-cover"
+                        />
+                    </div>
+                </div>
             </div>
         </header>
     );
