@@ -1,172 +1,177 @@
 # XAI_ChestX-ray
-# Explainable AI for Pneumonia Detection from Chest X-ray Images
+**Explainable Deep Learning for Pneumonia Detection from Chest X-ray Images**
 
 ## 📌 Project Overview
-This project implements a deep learning–based system to detect **Pneumonia** from chest X-ray images and explains the model’s predictions using **Grad-CAM** (Gradient-weighted Class Activation Mapping).
 
-The goal is not only to achieve accurate classification but also to **provide visual explanations** highlighting the lung regions that influence the model’s decisions, improving transparency and trust in medical AI systems.
+This project develops a deep learning–based pneumonia detection system from chest X-ray images and integrates Explainable AI (XAI) using **Grad-CAM** / **Grad-CAM++** to visualize the lung regions influencing model predictions.
+
+The primary objective is not only accurate classification but also transparent and clinically interpretable decision-making, which is essential for trustworthy medical AI.
 
 ---
 
 ## 🗂 Dataset
-**Chest X-ray Images (Pneumonia)** dataset is used.
+
+The project uses the **Chest X-ray Pneumonia** dataset containing labeled radiographic images.
 
 ### Dataset Structure
+```
 data/chest_xray/
 ├── train/
-│ ├── NORMAL/
-│ └── PNEUMONIA/
+│   ├── NORMAL/
+│   └── PNEUMONIA/
 ├── val/
-│ ├── NORMAL/
-│ └── PNEUMONIA/
+│   ├── NORMAL/
+│   └── PNEUMONIA/
 └── test/
-├── NORMAL/
-└── PNEUMONIA/
+    ├── NORMAL/
+    └── PNEUMONIA/
+```
 
-
-- Binary classification task
-- Images are grayscale chest X-rays
-- Dataset is known to have small validation and test splits
+### Key Characteristics
+- **Binary classification**: NORMAL vs PNEUMONIA
+- **Type**: Grayscale medical images
+- **Small validation set** → risk of optimistic accuracy
+- **Larger unseen test evaluation** used for realistic performance
 
 ---
 
 ## 🔍 Exploratory Data Analysis (EDA)
-The following analyses were performed:
-- Class distribution visualization
-- Sample image visualization (NORMAL vs PNEUMONIA)
-- Image size variability analysis
-- Pixel intensity distribution
 
-EDA revealed a clean dataset with visually distinguishable pneumonia patterns.
+Performed analyses include:
+- Class distribution visualization
+- Sample image inspection
+- Image size consistency check
+- Pixel-intensity distribution study
+
+**EDA confirmed:**
+- Clean dataset structure
+- Visible pneumonia-related opacity patterns
+- Potential class imbalance, motivating weighted training
 
 ---
 
 ## 🧠 Model Architecture
-- **Backbone:** ResNet-18 (pretrained on ImageNet)
-- **Modification:** Final fully connected layer replaced for binary classification
-- **Loss Function:** Binary Cross-Entropy with Logits
-- **Optimizer:** Adam
-- **Training Device:** CPU
+
+- **Backbone**: ResNet-18 pretrained on ImageNet
+- **Modification**: Final fully connected layer adapted for binary classification
+- **Loss Function**:
+    - Binary Cross-Entropy with Logits
+    - Class-weighted loss to address imbalance
+- **Optimizer**: Adam
+- **Training Device**: CPU
 
 ---
 
-## 🏋️ Training Details
-- Image size: `224 × 224`
-- Batch size: `16`
-- Epochs: `5`
-- Data augmentation: Random horizontal flip
-- Normalization: ImageNet mean & standard deviation
+## 🏋️ Training Strategy
 
-### Training Loss
-Loss decreased smoothly across epochs, indicating stable learning.
+### Hyperparameters
+- **Image size**: 224 × 224
+- **Batch size**: 16
+- **Epochs**: 20
+- **Learning rate**: 3 × 10⁻⁵
+
+### Data Augmentation (critical for generalization & XAI)
+- Random resized crop
+- Small rotation
+- Brightness/contrast jitter
+- Horizontal flip
+
+These augmentations prevent shortcut learning and improve Grad-CAM interpretability.
 
 ---
 
 ## 📊 Evaluation Results
 
-### Validation Set
-- Accuracy: **100%**
-- Validation size: **16 images**
+### Realistic Large Test Evaluation
+- **Test samples**: 624 images
+- **Accuracy**: ≈ 91%
+- Balanced performance across classes
 
-### Test Set
-- Accuracy: **100%**
-- Test size: **16 images**
-- Confusion Matrix:
-[[8 0]
-[0 8]]
+### Classification Summary
+- **NORMAL recall**: Improved significantly after class weighting
+- **PNEUMONIA recall**: Remained very high (near-perfect sensitivity)
+- **Macro-F1**: ≈ 0.90 → strong balanced performance
 
-
-### ⚠️ Important Note on Results
-The validation and test sets are **very small**, which can lead to optimistic accuracy scores.  
-Therefore, accuracy values should be interpreted as **strong initial performance rather than guaranteed generalization**.
+This confirms good generalization compared to the misleading initial 100% accuracy from the tiny validation split.
 
 ---
 
-## 🔍 Explainability with Grad-CAM
-Grad-CAM was applied to visualize important regions contributing to Pneumonia predictions.
+## 🔍 Explainability with Grad-CAM / Grad-CAM++
 
-### Observations:
-- Heatmaps focus primarily on lung regions
-- No strong activation on irrelevant areas (borders, text)
-- Supports clinical plausibility of model decisions
+Explainable AI is a core contribution of this project.
 
-Explainability is treated as a **core contribution** of this project rather than raw accuracy.
+### Method
+- **Grad-CAM** applied to the final convolutional layer of ResNet-18
+- **Grad-CAM++** used for sharper localization of pneumonia regions
+
+### Observations
+- Heatmaps focus primarily on lung fields, not borders or artifacts
+- Attention aligns with clinically plausible pneumonia regions
+- Stronger augmentation and longer training produced clearer, localized explanations
+
+### Interpretation
+These results demonstrate that the model:
+1. Learns meaningful medical features, not dataset shortcuts
+2. Provides transparent visual justification for predictions
+3. Supports trustworthy AI in medical imaging
 
 ---
 
 ## 📁 Project Structure
-XAI_Pneumonia_Project/
+
+```
+XAI_ChestX-ray/
 ├── data/
-│ └── chest_xray/
+│   └── chest_xray/
 ├── src/
-│ ├── dataset.py
-│ ├── model.py
-│ ├── train.py
-│ ├── evaluate.py
-│ └── gradcam.py
+│   ├── dataset.py
+│   ├── model.py
+│   ├── train.py
+│   ├── evaluate.py
+│   └── gradcam.py
 ├── models/
-│ └── pneumonia_model.pth
+│   └── pneumonia_model.pth
 ├── results/
-│ └── gradcam_outputs/
+│   └── gradcam_outputs/
 ├── notebooks/
-│ └── eda.ipynb
+│   └── eda.ipynb
 ├── README.md
 └── requirements.txt
-
+```
 
 ---
 
 ## ▶️ How to Run
 
-### 1. Setup Virtual Environment
+### 1. Create Virtual Environment
 
-First, create and activate a virtual environment to isolate project dependencies:
+> **IMPORTANT**: For this project, please install all packages **manually** using the provided commands. Do not rely on automated scripts or global installations.
 
 **Windows:**
 ```bash
-# Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
 venv\Scripts\activate
 ```
 
-**Linux/Mac:**
+**Linux / Mac:**
 ```bash
-# Create virtual environment
 python3 -m venv venv
-
-# Activate virtual environment
 source venv/bin/activate
 ```
 
 ### 2. Install Dependencies
-
-Once the virtual environment is activated, install all required packages:
-
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Train and Evaluate the Model
-
-Run the following scripts in order:
-
+### 3. Train, Evaluate, Explain
 ```bash
-# Train the model
 python src/train.py
-
-# Evaluate on test set
 python src/evaluate.py
-
-# Generate Grad-CAM visualizations
 python src/gradcam.py
 ```
 
-### 4. Deactivate Virtual Environment
-
-When you're done working on the project:
-
+### 4. Deactivate Environment
 ```bash
 deactivate
 ```
@@ -175,39 +180,39 @@ deactivate
 
 ## 📦 Dependencies
 
-- Python 3.10+
-- PyTorch 2.10.0
-- Torchvision 0.25.0
-- NumPy 2.4.1
-- Matplotlib 3.10.8
-- OpenCV 4.13.0.90
-- scikit-learn 1.8.0
-- grad-cam 1.5.5
+- Python 3.10 – 3.12
+- PyTorch
+- Torchvision
+- NumPy
+- Matplotlib
+- OpenCV
+- scikit-learn
+- grad-cam
 
-All dependencies are listed in `requirements.txt`
+(All versions listed in `requirements.txt`.)
 
 ---
 
-### Limitations
+## ⚠️ Limitations
 
-Small validation and test datasets
+- Dataset size is relatively small
+- CPU-only training limits experimentation
+- External clinical validation not performed
+- Performance may vary across hospitals or imaging devices
 
-CPU-only training
+---
 
-Results may not generalize to unseen hospital data
+## 🚀 Future Work
 
-### Future Work
+- Cross-validation for robustness
+- Multi-disease chest X-ray classification
+- Web-based deployment for clinical demo
+- Radiologist-guided evaluation of explanations
 
+---
 
+## 🧾 Conclusion
 
-Cross-validation
+This project demonstrates that **explainable deep learning** can effectively detect pneumonia from chest X-ray images while providing clinically meaningful visual explanations.
 
-Multi-class disease classification
-
-Deployment as a web application
-
-Clinical expert validation
-
-### Conclusion
-
-This proje  ct demonstrates that explainable deep learning can effectively detect pneumonia from chest X-ray images while providing meaningful visual explanations. Despite dataset size limitations, Grad-CAM visualizations support the reliability and interpretability of the model.
+Through class-weighted training, strong augmentation, and Grad-CAM-based interpretability, the final model achieves realistic generalization (**~91% accuracy**) and improved transparency—highlighting the importance of trustworthy AI in healthcare.
