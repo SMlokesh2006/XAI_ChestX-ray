@@ -8,7 +8,7 @@ import { GradCAMView } from './components/GradCAMView';
 import { DiagnosticReport } from './components/DiagnosticReport';
 
 // Use environment variable or default to localhost
-const API_URL = 'http://localhost:5000';
+const API_URL = 'http://127.0.0.1:5000';
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
