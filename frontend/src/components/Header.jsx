@@ -1,5 +1,6 @@
 import React from 'react';
 import { Stethoscope, Activity, Github } from 'lucide-react';
+import avatarUrl from '../assets/male-avatar-svgrepo-com.svg';
 
 export function Header() {
     return (
@@ -32,7 +33,7 @@ export function Header() {
                     </div>
                     <div className="h-10 w-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
                         <img
-                            src="C:\Users\Lokesh S M\Desktop\COLLEGE\PDL\PDL Project\XAI_ChestX-ray\frontend\src\assets\male-avatar-svgrepo-com.svg"
+                            src={avatarUrl}
                             alt="Profile"
                             className="h-full w-full object-cover"
                         />
