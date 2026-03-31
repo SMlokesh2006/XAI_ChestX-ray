@@ -60,11 +60,15 @@ XAI_ChestX-ray/
 │   └── package.json
 ├── data/
 │   └── chest_xray/
+├── EDA/                    # Exploratory Data Analysis
+│   ├── results/
+│   └── visualisation.py
 ├── src/
 │   ├── dataset.py
 │   ├── model.py
 │   ├── train.py
 │   ├── evaluate.py
+│   ├── evaluate_large.py   # Alternative evaluation script
 │   ├── gradcam.py
 │   └── explainability_utils.py
 ├── models/
@@ -118,8 +122,8 @@ npm run dev
 ### Backend (Python)
 - Flask, Flask-CORS
 - PyTorch, Torchvision
-- NumPy, Matplotlib, OpenCV
-- Grad-CAM
+- NumPy, Matplotlib, OpenCV, Pillow
+- Grad-CAM, scikit-learn, tqdm
 
 ### Frontend (Node.js)
 - React, Vite

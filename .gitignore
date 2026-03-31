@@ -48,10 +48,10 @@ wheels/
 *.ckpt
 
 # Data files (uncomment if you don't want to track data)
-# data/
-# *.csv
-# *.jpg
-# *.png
+data/
+*.csv
+*.jpg
+*.png
 
 # OS files
 .DS_Store
